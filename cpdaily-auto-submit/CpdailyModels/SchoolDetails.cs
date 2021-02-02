@@ -27,6 +27,11 @@ namespace cpdaily_auto_submit.CpdailyModels
 
         public string CasLoginUrl { get; set; }
 
+        public string GetIdsLoginUrl()
+        {
+            return $"{IdsUrl}/login?service=https://cqjtu.campusphere.net/wec-counselor-sign-apps/stu/mobile/index.html";
+        }
+
         public string GetLoginUrl()
         {
             var serviceUrl = HttpUtility.UrlEncode("https://mobile.campushoy.com/v6/auth/campus/cas/login");
