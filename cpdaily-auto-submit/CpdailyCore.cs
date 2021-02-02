@@ -166,16 +166,13 @@ namespace cpdaily_auto_submit
             return GetSchoolDetailsAsync(school.Id, secretKey.Chk);
         }
 
-        public async Task<LoginResult> LoginAsync(string username, string password, string chk, SchoolDetails schoolDetails, ILoginWorker loginWorker)
-        {
-            LoginResult loginResult = new LoginResult();
-            loginResult.SchoolDetails = schoolDetails;
-            //loginResult.EncryptedToken = await loginWorker.GetEncrypedToken(username, password, schoolDetails.GetLoginUrl());
-            //loginResult.Token = CpdailyCrypto.DESDecrypt(loginResult.EncryptedToken, "XCE927==", CpdailyCrypto.IV);
-            //loginResult.CpdailyCookies = await CpdailyAuth(loginResult.EncryptedToken, schoolDetails.Id, chk);
-            return loginResult;
-        }
-
+        /// <summary>
+        /// 通用登录，今日校园的Auth阶段(未完成)
+        /// </summary>
+        /// <param name="encryptedToken">通过LoginWorker得到的Token</param>
+        /// <param name="schoolId">School Id</param>
+        /// <param name="chk">通过GetSecretKeyAsync()获取到的Chk密钥</param>
+        /// <returns>CookieContainer(以后将会修改)</returns>
         public async Task<CookieContainer> CpdailyAuth(string encryptedToken, string schoolId, string chk)
         {
             string encryptedData = JsonConvert.SerializeObject(new { c = schoolId, d = encryptedToken });
@@ -216,6 +213,12 @@ namespace cpdaily_auto_submit
             return result;
         }
 
+        /// <summary>
+        /// 通用登录，设备异常需验证，发送验证码(未完成)
+        /// </summary>
+        /// <param name="cookieContainer">通过CpdailyAuth()得到的CookieContainer</param>
+        /// <param name="phoneNumber">手机号(需要修改:可在Auth得到)</param>
+        /// <returns></returns>
         public async Task SendVerifyMessage(CookieContainer cookieContainer, string phoneNumber)
         {
             string mobile = CpdailyCrypto.DESEncrypt(phoneNumber, "QTZ&A@54", CpdailyCrypto.IV);
@@ -245,6 +248,14 @@ namespace cpdaily_auto_submit
 
         }
 
+        /// <summary>
+        /// 通用登录，设备异常需验证，提交验证码(未完成)
+        /// </summary>
+        /// <param name="cookieContainer">通过CpdailyAuth()得到的CookieContainer</param>
+        /// <param name="encryptedToken">通过LoginWorker得到的Token</param>
+        /// <param name="phoneNumber">手机号</param>
+        /// <param name="messageCode">验证码</param>
+        /// <returns></returns>
         public async Task VerifyCode(CookieContainer cookieContainer, string encryptedToken, string phoneNumber, string messageCode)
         {
             string url = "https://mobile.campushoy.com/v6/auth/deviceChange/validateMessageCode";

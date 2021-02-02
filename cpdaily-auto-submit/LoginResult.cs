@@ -9,11 +9,6 @@ namespace cpdaily_auto_submit
 {
     public class LoginResult
     {
-        public string Token { get; set; }
-        public string EncryptedToken { get; set; }
-        public CookieContainer CpdailyCookies { get; set; }
-        public SchoolDetails SchoolDetails { get; set; }
-        //****new****//
         public string AuthId { get; set; }
         public string DeviceStatus { get; set; }
         [JsonProperty("deviceExceptionMsg")]
