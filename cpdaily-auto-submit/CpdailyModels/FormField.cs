@@ -1,11 +1,12 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace cpdaily_auto_submit.CpdailyModels
 {
-    public class FormField
+    public class FormField : ICloneable
     {
         [JsonProperty("wid")]
         public string Wid { get; set; }
@@ -13,6 +14,9 @@ namespace cpdaily_auto_submit.CpdailyModels
         [JsonProperty("formWid")]
         public string FormWid { get; set; }
 
+        /// <summary>
+        /// 1:文本，2:单选，3:多选，4:图片(暂不支持)
+        /// </summary>
         [JsonProperty("fieldType")]
         public int FieldType { get; set; }
 
@@ -57,5 +61,12 @@ namespace cpdaily_auto_submit.CpdailyModels
 
         [JsonProperty("fieldItems")]
         public List<FieldItem> FieldItems { get; set; }
+
+        public object Clone()
+        {
+            var result = (FormField)this.MemberwiseClone();
+            result.FieldItems = this.FieldItems.ToList();
+            return result;
+        }
     }
 }
