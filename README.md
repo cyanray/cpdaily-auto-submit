@@ -1,6 +1,8 @@
 # cpdaily-auto-submit
 今日校园表单自动提交，通用版。
 
+![](https://github.com/cyanray/cpdaily-auto-submit/workflows/build/badge.svg)
+
 ## ⚠
 我们学校已经不需要填报今日校园，因此本项目缺少测试。(可能需要各位网友帮助本项目的继续)
 
