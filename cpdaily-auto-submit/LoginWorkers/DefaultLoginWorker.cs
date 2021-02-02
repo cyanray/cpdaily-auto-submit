@@ -13,28 +13,34 @@ namespace cpdaily_auto_submit.LoginWorkers
 {
     public class DefaultLoginWorker : ILoginWorker
     {
-        public const string WebUserAgent = "Mozilla/5.0 (Linux; Android 5.1.1; vmos Build/LMY48G; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/52.0.2743.100 Mobile Safari/537.36  cpdaily/8.2.16 wisedu/8.2.16";
-
-        private Task<bool> NeedCaptcha(Uri loginPageUri)
+        private Task<bool> NeedCaptcha(string loginPageUri)
         {
             // TODO: IMPL
             return Task.FromResult(false);
         }
 
-        public override async Task<string> GetEncrypedToken(string username, string password, string idsUrl)
+        public override async Task<LoginParameter> GetLoginParameter(string username, string password, string idsUrl)
         {
-            CookieContainer CookieContainer = new CookieContainer();
+            LoginParameter loginParameter = new LoginParameter()
+            {
+                Username = username,
+                Password = password,
+                IdsUrl = idsUrl,
+                NeedCaptcha = false
+            };
             RestClient LoginClient = new RestClient(idsUrl)
             {
-                CookieContainer = CookieContainer
+                CookieContainer = loginParameter.CookieContainer
             };
             var request = new RestRequest(Method.POST);
             request.AddHeader("User-Agent", WebUserAgent);
             var response = await LoginClient.ExecutePostAsync(request);
             if (response.StatusCode != HttpStatusCode.OK)
                 throw new Exception("非200状态响应");
+            string urlRoot = response.ResponseUri.GetLeftPart(UriPartial.Authority);
 
-            var needCaptchaTask = NeedCaptcha(response.ResponseUri);
+            var needCaptchaTask = NeedCaptcha(urlRoot);
+            loginParameter.CaptchaImageUrl = $"{urlRoot}/authserver/captcha.html";
 
             //** 解析 pwdDefaultEncryptSalt **//
             var matches = Regex.Matches(response.Content, "var pwdDefaultEncryptSalt *= *\"(.*?)\";");
@@ -44,6 +50,12 @@ namespace cpdaily_auto_submit.LoginWorkers
             {
                 pwdDefaultEncryptSalt = matches[0].Groups[1].Value;
             }
+
+            // update encryptedPwd
+            byte[] iv = Encoding.ASCII.GetBytes(CpdailyCrypto.RandomString(16));
+            string tPassword = CpdailyCrypto.RandomString(64) + password;
+            string encryptedPwd = CpdailyCrypto.AESEncrypt(tPassword, pwdDefaultEncryptSalt, iv);
+            loginParameter.EncryptedPassword = encryptedPwd;
 
             //** 解析 action、lt、execution **//
             var doc = new HtmlDocument();
@@ -58,54 +70,52 @@ namespace cpdaily_auto_submit.LoginWorkers
                 .SelectNodes(@"//*[@id=""casLoginForm""]/input[3]")[0]
                 .GetAttributeValue("value", string.Empty);
 
-            if (await needCaptchaTask) throw new NeedCaptchaException();
+            loginParameter.Parameters.Add("lt", lt);
+            loginParameter.Parameters.Add("execution", execution);
+            loginParameter.ActionUrl = urlRoot + action;
 
+            loginParameter.NeedCaptcha = await needCaptchaTask;
 
-            byte[] iv = Encoding.ASCII.GetBytes(CpdailyCrypto.RandomString(16));
-            string tPassword = CpdailyCrypto.RandomString(64) + password;
-            string encryptedPwd = CpdailyCrypto.AESEncrypt(tPassword, pwdDefaultEncryptSalt, iv);
+            return loginParameter;
+        }
 
-            string loginUrl = response.ResponseUri.GetLeftPart(UriPartial.Authority) + action;
+        public override async Task<string> IdsLogin(LoginParameter loginParameter)
+        {
+            string loginUrl = loginParameter.ActionUrl;
+            IRestResponse response = null;
             do
             {
-                LoginClient = new RestClient(loginUrl)
+                RestClient client = new RestClient(loginUrl)
                 {
-                    CookieContainer = CookieContainer,
+                    CookieContainer = loginParameter.CookieContainer,
                     FollowRedirects = false
                 };
-                request = new RestRequest(Method.POST);
+                var request = new RestRequest(Method.POST);
                 request.AddHeader("User-Agent", WebUserAgent);
-                request.AddParameter("username", username);
-                request.AddParameter("password", encryptedPwd);
-                request.AddParameter("captchaResponse", "");
-                request.AddParameter("lt", lt);
+                request.AddParameter("username", loginParameter.Username);
+                request.AddParameter("password", loginParameter.EncryptedPassword);
+                request.AddParameter("captchaResponse", loginParameter.CaptchaValue);
+                request.AddParameter("lt", loginParameter.Parameters["lt"]);
                 request.AddParameter("dllt", "mobileLogin");
-                request.AddParameter("execution", execution);
+                request.AddParameter("execution", loginParameter.Parameters["execution"]);
                 request.AddParameter("_eventId", "submit");
                 request.AddParameter("rmShown", "1");
-                response = await LoginClient.ExecutePostAsync(request);
+                response = await client.ExecutePostAsync(request);
 
                 loginUrl = response.Headers.Where(x => x.Name == "Location").Select(x => x.Value.ToString()).FirstOrDefault();
             } while (!string.IsNullOrEmpty(loginUrl));
 
-
+            StringBuilder sb = new StringBuilder();
             foreach (var cookie in response.Cookies)
             {
-                Console.WriteLine($"{cookie.Name}:{cookie.Value};");
+                sb.Append($"{cookie.Name}={cookie.Value}; ");
             }
-
-            //if (response.StatusCode != HttpStatusCode.OK)
-            //    throw new Exception("非200状态响应");
-
-            //matches = Regex.Matches(response.ResponseUri.OriginalString, "mobile_token=(.*)");
-            //if (matches.Count > 0)
-            //{
-            //    return matches[0].Groups[1].Value;
-            //}
-            return "";
-            //// TODO: parse error message.
-            //throw new Exception("登录失败。");
+            return sb.ToString();
         }
-    
+
+        public override Task<string> GetEncrypedToken(LoginParameter loginParameter)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

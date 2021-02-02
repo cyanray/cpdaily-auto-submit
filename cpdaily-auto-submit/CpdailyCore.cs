@@ -170,9 +170,9 @@ namespace cpdaily_auto_submit
         {
             LoginResult loginResult = new LoginResult();
             loginResult.SchoolDetails = schoolDetails;
-            loginResult.EncryptedToken = await loginWorker.GetEncrypedToken(username, password, schoolDetails.GetLoginUrl());
-            loginResult.Token = CpdailyCrypto.DESDecrypt(loginResult.EncryptedToken, "XCE927==", CpdailyCrypto.IV);
-            loginResult.CpdailyCookies = await CpdailyAuth(loginResult.EncryptedToken, schoolDetails.Id, chk);
+            //loginResult.EncryptedToken = await loginWorker.GetEncrypedToken(username, password, schoolDetails.GetLoginUrl());
+            //loginResult.Token = CpdailyCrypto.DESDecrypt(loginResult.EncryptedToken, "XCE927==", CpdailyCrypto.IV);
+            //loginResult.CpdailyCookies = await CpdailyAuth(loginResult.EncryptedToken, schoolDetails.Id, chk);
             return loginResult;
         }
 
@@ -409,7 +409,7 @@ namespace cpdaily_auto_submit
             StringBuilder sb = new StringBuilder();
             foreach (var cookie in response.Cookies)
             {
-                sb.Append($"{cookie.Name}:{cookie.Value}; ");
+                sb.Append($"{cookie.Name}={cookie.Value}; ");
             }
             return sb.ToString();
         }
