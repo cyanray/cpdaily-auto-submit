@@ -1,5 +1,4 @@
 ﻿using cpdaily_auto_submit.CpdailyModels;
-using cpdaily_auto_submit.LoginWorkers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
@@ -461,10 +460,13 @@ namespace cpdaily_auto_submit
             var request = new RestRequest(Method.POST);
             request.AddHeader("Cookie", cookies);
             request.AddHeader("User-Agent", ApiUserAgent);
-            request.AddJsonBody(new {   pageNumber = 1,
-                                        pageSize = 20,
-                                        formWid = formWid,
-                                        collectorWid = wid });
+            request.AddJsonBody(new
+            {
+                pageNumber = 1,
+                pageSize = 20,
+                formWid = formWid,
+                collectorWid = wid
+            });
             var response = await client.ExecutePostAsync(request);
             if (response.StatusCode != HttpStatusCode.OK)
                 throw new Exception("非200状态响应");
@@ -485,14 +487,14 @@ namespace cpdaily_auto_submit
             var result = (FormField)origin.Clone();
             if (origin.FieldType == 1)         // 填空只需要修改文本值
             {
-                result.Value = change.Value;   
+                result.Value = change.Value;
             }
-            else if(origin.FieldType == 2)     // 单选需要修改 Value 为选项Id，且去除不用选项
+            else if (origin.FieldType == 2)     // 单选需要修改 Value 为选项Id，且去除不用选项
             {
                 result.FieldItems.Clear();
                 foreach (var item in origin.FieldItems)
                 {
-                    if(item.Content == change.Value)
+                    if (item.Content == change.Value)
                     {
                         result.Value = item.ItemWid;
                         item.IsSelected = 1;
@@ -501,7 +503,7 @@ namespace cpdaily_auto_submit
                     }
                 }
             }
-            else if(origin.FieldType == 3)      // 多选需要分割默认选项值，且去除不用选项
+            else if (origin.FieldType == 3)      // 多选需要分割默认选项值，且去除不用选项
             {
                 result.FieldItems.Clear();
                 var values = change.Value.Split(",");
@@ -518,7 +520,7 @@ namespace cpdaily_auto_submit
                     }
                 }
             }
-            else if(origin.FieldType == 4)      // 图片类型
+            else if (origin.FieldType == 4)      // 图片类型
             {
                 throw new Exception("暂时不支持图片类型，请在GitHub提出issues请求支持!");
             }
@@ -538,7 +540,7 @@ namespace cpdaily_auto_submit
         /// <param name="latitude">纬度</param>
         /// <param name="longitude">经度</param>
         /// <returns></returns>
-        public async Task SubmitForm(string cookies,string schoolId, FormItem formItem, FormField[] formFieldsToSubmit, string address, double latitude, double longitude)
+        public async Task SubmitForm(string cookies, string schoolId, FormItem formItem, FormField[] formFieldsToSubmit, string address, double latitude, double longitude)
         {
             var cpdaily_extension = CpdailyCrypto.DESEncrypt(JsonConvert.SerializeObject(DeviceInfo), "b3L26XNL", CpdailyCrypto.IV);
             var obj = new
@@ -566,7 +568,7 @@ namespace cpdaily_auto_submit
             if (response.StatusCode != HttpStatusCode.OK)
                 throw new Exception("非200状态响应");
             var json = JObject.Parse(response.Content);
-            if(json["code"].Value<int>() != 0)
+            if (json["code"].Value<int>() != 0)
             {
                 throw new Exception(json["message"].Value<string>());
             }

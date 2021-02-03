@@ -1,8 +1,6 @@
-﻿using cpdaily_auto_submit.CpdailyModels;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using RestSharp;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;

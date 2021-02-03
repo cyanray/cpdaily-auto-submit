@@ -1,9 +1,4 @@
-﻿using cpdaily_auto_submit.CpdailyModels;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
+﻿using Newtonsoft.Json;
 
 namespace cpdaily_auto_submit
 {
