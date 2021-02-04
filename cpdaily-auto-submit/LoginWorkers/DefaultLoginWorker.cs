@@ -11,10 +11,19 @@ namespace cpdaily_auto_submit.LoginWorkers
 {
     public class DefaultLoginWorker : ILoginWorker
     {
-        private Task<bool> NeedCaptcha(string loginPageUri)
+        private async Task<bool> NeedCaptcha(string urlRoot, CookieContainer cookieContainer, string username)
         {
-            // TODO: IMPL
-            return Task.FromResult(false);
+            string url = $"{urlRoot}/authserver/needCaptcha.html?username={username}&pwdEncrypt2=pwdEncryptSalt&v={new Random().NextDouble()}";
+            RestClient LoginClient = new RestClient(url)
+            {
+                CookieContainer = cookieContainer
+            };
+            var request = new RestRequest(Method.GET);
+            request.AddHeader("User-Agent", WebUserAgent);
+            var response = await LoginClient.ExecuteGetAsync(request);
+            if (response.StatusCode != HttpStatusCode.OK)
+                throw new Exception("非200状态响应");
+            return response.Content.Contains("true");
         }
 
         public override async Task<LoginParameter> GetLoginParameter(string username, string password, string idsUrl)
@@ -37,7 +46,7 @@ namespace cpdaily_auto_submit.LoginWorkers
                 throw new Exception("非200状态响应");
             string urlRoot = response.ResponseUri.GetLeftPart(UriPartial.Authority);
 
-            var needCaptchaTask = NeedCaptcha(urlRoot);
+            var needCaptchaTask = NeedCaptcha(urlRoot, loginParameter.CookieContainer, username);
             loginParameter.CaptchaImageUrl = $"{urlRoot}/authserver/captcha.html";
 
             //** 解析 pwdDefaultEncryptSalt **//
