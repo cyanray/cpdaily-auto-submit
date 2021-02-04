@@ -532,15 +532,16 @@ namespace cpdaily_auto_submit
         }
 
         /// <summary>
-        /// 提交表单
+        /// 提交修改后的表单
         /// </summary>
+        /// <param name="cookies">用于访问校内应用的 Cookie</param>
         /// <param name="formItem">通过GetFormItemsAsync()获取</param>
         /// <param name="formFieldsToSubmit">被修改过的FormField</param>
         /// <param name="address">地址</param>
         /// <param name="latitude">纬度</param>
         /// <param name="longitude">经度</param>
         /// <returns></returns>
-        public async Task SubmitForm(string cookies, string schoolId, FormItem formItem, FormField[] formFieldsToSubmit, string address, double latitude, double longitude)
+        public async Task SubmitForm(string cookies, FormItem formItem, FormField[] formFieldsToSubmit, string address, double latitude, double longitude)
         {
             var cpdaily_extension = CpdailyCrypto.DESEncrypt(JsonConvert.SerializeObject(DeviceInfo), "b3L26XNL", CpdailyCrypto.IV);
             var obj = new
