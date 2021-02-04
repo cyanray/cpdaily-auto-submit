@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Converters;
+using System;
 using System.Text.Json.Serialization;
 using System.Web;
 
@@ -23,6 +24,13 @@ namespace cpdaily_auto_submit.CpdailyModels
         public string IdsUrl { get; set; }
 
         public string CasLoginUrl { get; set; }
+
+        public string AmpUrl { get; set; }
+
+        public string GetAmpUrl()
+        {
+            return new Uri(AmpUrl).GetLeftPart(UriPartial.Authority);
+        }
 
         public string GetIdsLoginUrl()
         {
