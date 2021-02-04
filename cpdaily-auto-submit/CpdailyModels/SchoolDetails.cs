@@ -34,7 +34,7 @@ namespace cpdaily_auto_submit.CpdailyModels
 
         public string GetIdsLoginUrl()
         {
-            return $"{IdsUrl}/login?service=https://cqjtu.campusphere.net/wec-counselor-sign-apps/stu/mobile/index.html";
+            return $"{IdsUrl}/login?service={GetAmpUrl()}/wec-counselor-sign-apps/stu/mobile/index.html";
         }
 
         public string GetLoginUrl()
