@@ -392,12 +392,15 @@ namespace cpdaily_auto_submit
 
             string url = $"https://cqjtu.campusphere.net/wec-portal-mobile/client/userStoreAppList?oick={CpdailyCrypto.GetOick(loginResult.UserId)}";
             IRestResponse response = null;
+            var cookieContainer = new CookieContainer();
+            cookieContainer.Add(new Uri("http://ids.cqjtu.edu.cn/"), new Cookie("CASTGC", loginResult.Tgc));
+            cookieContainer.Add(new Uri("http://ids.cqjtu.edu.cn/"), new Cookie("AUTHTGC", loginResult.Tgc));
             // RestSharp 不会处理复杂的跳转，因此自行循环处理
             do
             {
                 RestClient client = new RestClient(url)
                 {
-                    CookieContainer = CookieContainer,
+                    CookieContainer = cookieContainer,
                     FollowRedirects = false
                 };
                 var request = new RestRequest(Method.GET);
@@ -409,9 +412,9 @@ namespace cpdaily_auto_submit
                 request.AddHeader("CpdailyStandAlone", "0");
                 request.AddHeader("CpdailyInfo", DeviceInfo.EncryptCache);
                 request.AddHeader("User-Agent", ApiUserAgent);
+                request.AddHeader("tenantId", "cqjtu");// TODO:
                 request.AddHeader("TGC", tgc);
                 request.AddHeader("AmpCookies", ampCookies);
-                request.AddHeader("Cookie", $"CASTGC={loginResult.Tgc}; AUTHTGC={loginResult.Tgc};");
                 response = await client.ExecuteGetAsync(request);
 
                 url = response.Headers.Where(x => x.Name == "Location").Select(x => x.Value.ToString()).FirstOrDefault();
@@ -429,19 +432,22 @@ namespace cpdaily_auto_submit
         /// </summary>
         /// <param name="cookies">用于访问校内应用的 Cookie</param>
         /// <returns>FormItem[]</returns>
-        public async Task<FormItem[]> GetFormItemsAsync(string cookies)
+        public async Task<FormItem[]> GetFormItemsAsync(string ampUrl, string cookies)
         {
-            string url = "https://cqjtu.campusphere.net/wec-counselor-collector-apps/stu/collector/queryCollectorProcessingList";
+            string url = $"{ampUrl}/wec-counselor-collector-apps/stu/collector/queryCollectorProcessingList";
             RestClient client = new RestClient(url);
             var request = new RestRequest(Method.POST);
             request.AddHeader("Cookie", cookies);
-            request.AddHeader("User-Agent", ApiUserAgent);
+            request.AddHeader("User-Agent", WebUserAgent);
             request.AddJsonBody(new { pageNumber = 1, pageSize = 20 });
             var response = await client.ExecutePostAsync(request);
             if (response.StatusCode != HttpStatusCode.OK)
                 throw new Exception("非200状态响应");
             var json = JObject.Parse(response.Content);
-            // TODO: parse error message
+            if (json["code"].Value<int>() != 0)
+            {
+                throw new Exception($"出现错误: {json["message"].Value<string>()}, 错误代码: {json["code"].Value<int>()}。");
+            }
             var list = JArray.FromObject(json["datas"]["rows"]);
             return list.ToObject<FormItem[]>();
         }
@@ -453,13 +459,13 @@ namespace cpdaily_auto_submit
         /// <param name="wid">FormItem.Wid</param>
         /// <param name="formWid">FormItem.FormWid</param>
         /// <returns>FormField[]</returns>
-        public async Task<FormField[]> GetFormFieldsAsync(string cookies, string wid, string formWid)
+        public async Task<FormField[]> GetFormFieldsAsync(string ampUrl, string cookies, string wid, string formWid)
         {
-            string url = "https://cqjtu.campusphere.net/wec-counselor-collector-apps/stu/collector/getFormFields";
+            string url = $"{ampUrl}/wec-counselor-collector-apps/stu/collector/getFormFields";
             RestClient client = new RestClient(url);
             var request = new RestRequest(Method.POST);
             request.AddHeader("Cookie", cookies);
-            request.AddHeader("User-Agent", ApiUserAgent);
+            request.AddHeader("User-Agent", WebUserAgent);
             request.AddJsonBody(new
             {
                 pageNumber = 1,
@@ -471,7 +477,10 @@ namespace cpdaily_auto_submit
             if (response.StatusCode != HttpStatusCode.OK)
                 throw new Exception("非200状态响应");
             var json = JObject.Parse(response.Content);
-            // TODO: parse error message
+            if (json["code"].Value<int>() != 0)
+            {
+                throw new Exception($"出现错误: {json["message"].Value<string>()}, 错误代码: {json["code"].Value<int>()}。");
+            }
             var list = JArray.FromObject(json["datas"]["rows"]);
             return list.ToObject<FormField[]>();
         }
@@ -541,7 +550,7 @@ namespace cpdaily_auto_submit
         /// <param name="latitude">纬度</param>
         /// <param name="longitude">经度</param>
         /// <returns></returns>
-        public async Task SubmitForm(string cookies, FormItem formItem, FormField[] formFieldsToSubmit, string address, double latitude, double longitude)
+        public async Task SubmitForm(string ampUrl, string cookies, FormItem formItem, FormField[] formFieldsToSubmit, string address, double latitude, double longitude)
         {
             var cpdaily_extension = CpdailyCrypto.DESEncrypt(JsonConvert.SerializeObject(DeviceInfo), "b3L26XNL", CpdailyCrypto.IV);
             var obj = new
@@ -556,11 +565,11 @@ namespace cpdaily_auto_submit
                 form = formFieldsToSubmit
             };
             string objJson = JsonConvert.SerializeObject(obj);
-            string url = "https://cqjtu.campusphere.net/wec-counselor-collector-apps/stu/collector/submitForm";
+            string url = $"{ampUrl}/wec-counselor-collector-apps/stu/collector/submitForm";
             RestClient client = new RestClient(url);
             var request = new RestRequest(Method.POST);
             request.AddHeader("Cookie", cookies);
-            request.AddHeader("User-Agent", ApiUserAgent);
+            request.AddHeader("User-Agent", WebUserAgent);
             request.AddHeader("extension", "1");
             request.AddHeader("CpdailyStandAlone", "0");
             request.AddHeader("Cpdaily-Extension", cpdaily_extension);
