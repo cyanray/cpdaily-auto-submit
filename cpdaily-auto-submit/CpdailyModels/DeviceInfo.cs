@@ -32,7 +32,7 @@ namespace cpdaily_auto_submit.CpdailyModels
 
         public string Encrypt()
         {
-            string json = JsonConvert.SerializeObject(this, JsonUtils.GlobalSetting);
+            string json = JsonConvert.SerializeObject(this, Utils.GlobalSetting);
             return CpdailyCrypto.DESEncrypt(json, "ST83=@XV", CpdailyCrypto.IV);
         }
     }
