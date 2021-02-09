@@ -1,41 +1,41 @@
 ﻿using cpdaily_auto_submit.CpdailyModels;
 using cpdaily_auto_submit.LoginWorkers;
+using McMaster.Extensions.CommandLineUtils;
+using Newtonsoft.Json;
 using System;
-using System.Text;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace cpdaily_auto_submit
 {
-    class Program
+    [Command(
+    Name = "cpdaily-auto-submit",
+    Description = "今日校园自动填报程序",
+    ExtendedHelpText = @"
+提示:
+  本程序采用 MIT 协议开源(https://github.com/cyanray/cpdaily-auto-submit).
+  任何人可免费使用本程序并查看其源代码.
+")]
+    [VersionOptionFromMember("--version", MemberName = nameof(GetVersion))]
+    //[Subcommand(
+    //typeof(LoginCommand),
+    //typeof(SubmitCommand)
+    //)]
+    class Program : CommandBase
     {
-        static async Task Main(string[] args)
+        static async Task<int> Main(string[] args)
         {
-            DeviceInfo deviceInfo = new DeviceInfo
-            {
-                AppVersion = "8.2.16",
-                SystemName = "android",
-                SystemVersion = "5.1.1",
-                DeviceId = "vmosserivmosvmos",
-                Model = "vmos",
-                Longitude = 0,
-                Latitude = 0,
-                UserId = ""
-            };
+            return await CommandLineApplication.ExecuteAsync<Program>(args);
+        }
 
-            CpdailyCore cpdaily = new CpdailyCore()
-            {
-                DeviceInfo = deviceInfo
-            };
+        private static string GetVersion()
+    => typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
 
-            //SecretKey key = await cpdaily.GetSecretKey();
-            //Console.WriteLine($"guid: {key.Guid}, chk: {key.Chk}, fhk: {key.Fhk}");
-
-            Console.WriteLine(CpdailyCrypto.GetOick());
-            Console.WriteLine(CpdailyCrypto.GetOick("test"));
-
-
-            Console.ReadKey();
-            Console.WriteLine("Hello World!");
+        protected async override Task<int> OnExecuteAsync(CommandLineApplication app)
+        {
+            app.ShowHelp();
+            return await base.OnExecuteAsync(app);
         }
     }
 }
