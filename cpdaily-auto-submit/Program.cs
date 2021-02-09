@@ -18,10 +18,9 @@ namespace cpdaily_auto_submit
   任何人可免费使用本程序并查看其源代码.
 ")]
     [VersionOptionFromMember("--version", MemberName = nameof(GetVersion))]
-    //[Subcommand(
-    //typeof(LoginCommand),
-    //typeof(SubmitCommand)
-    //)]
+    [Subcommand(
+    typeof(InitCommand)
+    )]
     class Program : CommandBase
     {
         static async Task<int> Main(string[] args)
