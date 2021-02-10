@@ -453,6 +453,31 @@ namespace cpdaily_auto_submit
         }
 
         /// <summary>
+        /// 获取历史的表单项目
+        /// </summary>
+        /// <param name="cookies">用于访问校内应用的 Cookie</param>
+        /// <returns>FormItem[]</returns>
+        public async Task<FormItem[]> GetFormItemsHistoryAsync(string ampUrl, string cookies)
+        {
+            string url = $"{ampUrl}/wec-counselor-collector-apps/stu/collector/queryCollectorHistoryList";
+            RestClient client = new RestClient(url);
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("Cookie", cookies);
+            request.AddHeader("User-Agent", WebUserAgent);
+            request.AddJsonBody(new { pageNumber = 1, pageSize = 5 });
+            var response = await client.ExecutePostAsync(request);
+            if (response.StatusCode != HttpStatusCode.OK)
+                throw new Exception("非200状态响应");
+            var json = JObject.Parse(response.Content);
+            if (json["code"].Value<int>() != 0)
+            {
+                throw new Exception($"出现错误: {json["message"].Value<string>()}, 错误代码: {json["code"].Value<int>()}。");
+            }
+            var list = JArray.FromObject(json["datas"]["rows"]);
+            return list.ToObject<FormItem[]>();
+        }
+
+        /// <summary>
         /// 获取表单的字段
         /// </summary>
         /// <param name="cookies">用于访问校内应用的 Cookie</param>
