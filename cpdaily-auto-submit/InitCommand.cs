@@ -34,7 +34,8 @@ namespace cpdaily_auto_submit
             Log.Information("School: {school}", SchoolName);
 
             CpdailyCore cpdaily = new CpdailyCore();
-
+            string cookies = null;
+            SchoolDetails schoolDetails = null;
             try
             {
                 Log.Information("正在获取 {info} ...", "SecretKey");
@@ -59,7 +60,7 @@ namespace cpdaily_auto_submit
                 }
 
                 Log.Information("正在获取登录所需参数...");
-                var schoolDetails = await schoolDetailsTask;
+                schoolDetails = await schoolDetailsTask;
                 var parameter = await loginWorker.GetLoginParameter(Username, Password, schoolDetails.GetIdsLoginUrl());
                 if (parameter.NeedCaptcha)
                 {
@@ -68,7 +69,7 @@ namespace cpdaily_auto_submit
                 }
 
                 Log.Information("正在登录...");
-                var cookies = await loginWorker.IdsLogin(parameter);
+                cookies = await loginWorker.IdsLogin(parameter);
                 Log.Information("登录成功, Cookie: {cookie}", cookies);
 
                 // remove before adding to avoid duplication.
@@ -84,6 +85,84 @@ namespace cpdaily_auto_submit
                 Log.Error(ex.StackTrace);
             }
 
+            try
+            {
+                Log.Warning("下面进行表单向导，模拟完成一次历史表单，让程序学习如何填写表单。");
+                Log.Information("获取历史表单...");
+                var forms = await cpdaily.GetFormItemsHistoryAsync(schoolDetails.GetAmpUrl(), cookies);
+                if (forms.Length == 0)
+                {
+                    throw new Exception("没有获取到历史表单，表单向导无法继续!");
+                }
+                Log.Information("获取到 {count} 条历史表单记录，请选择其中一条(输入序号):", forms.Length);
+                for (int i = 0; i < forms.Length; i++)
+                {
+                    Log.Information("{No}. {Title}", i + 1, forms[i].Title);
+                }
+                int index = Convert.ToInt32(Console.ReadLine()) - 1;
+                FormItem form = forms[index];
+                var formFields = await cpdaily.GetFormFieldsAsync(schoolDetails.GetAmpUrl(),cookies, form.WId, form.FormWId);
+                var requiredFields = formFields.Where(x => x.IsRequired == 1).ToArray();
+                Log.Information("获取到 {count} 条必填字段", requiredFields.Length);
+                List<FormFieldChange> result = new List<FormFieldChange>();
+                for (int i = 0; i < requiredFields.Length; i++)
+                {
+                    FormField field = requiredFields[i];
+                    var typeString = field.FieldType switch
+                    {
+                        1 => "填空",
+                        2 => "单选",
+                        3 => "多选",
+                        4 => "图片",
+                        _ => "未知",
+                    };
+                    Log.Information("{No}. {Title} ({type}):", i + 1, field.Title, typeString);
+                    Log.Information("描述: {Description}", string.IsNullOrEmpty(field.Description) ? "无" : field.Description);
+                    if (field.FieldType == 1)
+                    {
+                        Log.Information("请输入文本:");
+                        string value = Console.ReadLine();
+                        var c = new FormFieldChange()
+                        {
+                            FieldType = field.FieldType,
+                            Title = field.Title,
+                            Value = value
+                        };
+                        result.Add(c);
+                    }
+                    else if(field.FieldType == 2)
+                    {
+                        for (int t = 0; t < field.FieldItems.Count; t++)
+                        {
+                            FieldItem item = field.FieldItems[t];
+                            Log.Information("\t{No}.{Title}", t + 1, item.Content);
+                        }
+                        Log.Information("请输入选项序号:");
+                        int value = Convert.ToInt32(Console.ReadLine()) - 1;
+                        var c = new FormFieldChange()
+                        {
+                            FieldType = field.FieldType,
+                            Title = field.Title,
+                            Value = field.FieldItems[value].Content
+                        };
+                        result.Add(c);
+                    }
+                    else
+                    {
+                        throw new Exception("暂不支持这种类型，请到 Github 提出 issues!");
+                    }
+                }
+                Log.Information("表单向导完成！");
+
+                AppConfig.FormFields = result;
+                SaveAppConfig();
+            }
+            catch (Exception ex)
+            {
+                Log.Error("表单向导过程中出现异常!");
+                Log.Error(ex.Message);
+                Log.Error(ex.StackTrace);
+            }
 
             return await base.OnExecuteAsync(app);
         }
