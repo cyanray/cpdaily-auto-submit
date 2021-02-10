@@ -20,4 +20,11 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --configuration Release --no-restore
+    - name: Publish
+      run: dotnet publish -c Release -o out 
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v2
+      with: 
+        name: cpdaily-auto-submit-publish
+        path: "out"
