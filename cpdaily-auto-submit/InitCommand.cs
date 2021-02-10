@@ -83,6 +83,7 @@ namespace cpdaily_auto_submit
                 Log.Error("登录过程中出现异常!");
                 Log.Error(ex.Message);
                 Log.Error(ex.StackTrace);
+                return 1;
             }
 
             try
@@ -162,6 +163,7 @@ namespace cpdaily_auto_submit
                 Log.Error("表单向导过程中出现异常!");
                 Log.Error(ex.Message);
                 Log.Error(ex.StackTrace);
+                return 1;
             }
 
             return await base.OnExecuteAsync(app);
