@@ -11,7 +11,7 @@
 - [x] 完成CpdailyCore类
 - [x] 完善登录API
 - [x] 完善表单提交API
-- [ ] **完成CLI程序(进行中...)**
+- [x] 完成CLI程序
 - [ ] 完成WebAPI程序
 
 ## 特性
@@ -21,28 +21,39 @@
 - [x] 表单获取与提交
 - [x] 表单向导
 - [x] 多用户支持
+- [x] 填空表单项
+- [x] 单选表单项
+- [ ] 多选表单项 (缺少测试)
+- [ ] 图片表单项 (缺少测试)
 
 ## 使用方法
 
 ### 0x00 准备运行环境
 
-未完待续...
+首先需要在[.Net Runtime 下载页](https://dotnet.microsoft.com/download/dotnet-core/current/runtime)下载并安装 **.NET5 Runtime** (提示：Run server apps下面的下载)。
+
+然后在[Release页面](https://github.com/cyanray/cpdaily-auto-submit/releases)下载 cx-auto-sign.zip，并解压到某个目录。
+
+(你也可以在 [Actions](https://github.com/cyanray/cpdaily-auto-submit/actions) 中找到自动编译的测试版)
 
 ### 0x01 登录账号并完成表单向导
+登录账号并执行表单向导。你需要根据向导的指示模拟完成一次表单，从而让程序学会自己填表单。
 
 ```bash
 dotnet cpdaily-auto-submit.dll init -u "学号" -p "密码" -s "学校名称"
 ```
 
 ### 0x02 提交表单
+对每一个账号，获取最新的未完成表单并根据配置提交表单。
 
 ```bash
 dotnet cpdaily-auto-submit.dll submit
 ```
 ### 0x03 加入其他账号(仅限同一个学校)
+加入新账号。
 
 ```bash
-dotnet cpdaily-auto-submit.dll adduser -u "学号" -p "密码"
+dotnet cpdaily-auto-submit.dll add-user -u "学号" -p "密码"
 ```
 
 ## 声明
