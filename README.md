@@ -32,7 +32,7 @@
 
 首先需要在[.Net Runtime 下载页](https://dotnet.microsoft.com/download/dotnet/current/runtime)下载并安装 **.NET5 Runtime** (提示：Run server apps下面的下载)。
 
-然后在[Release页面](https://github.com/cyanray/cpdaily-auto-submit/releases)下载 cx-auto-sign.zip，并解压到某个目录。
+然后在[Release页面](https://github.com/cyanray/cpdaily-auto-submit/releases)下载 cpdaily-auto-submit.zip，并解压到某个目录。
 
 (你也可以在 [Actions](https://github.com/cyanray/cpdaily-auto-submit/actions) 中找到自动编译的测试版)
 
