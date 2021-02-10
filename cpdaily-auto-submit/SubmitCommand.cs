@@ -114,7 +114,7 @@ namespace cpdaily_auto_submit
                             requiredFields[t] = CpdailyCore.MergeToFormField(requiredFields[t], AppConfig.FormFields[t]);
                         }
                         Log.Information("提交表单中...");
-                        await cpdaily.SubmitForm(schoolDetails.GetAmpUrl(), cookies, form, requiredFields, "Address", 0, 0);
+                        await cpdaily.SubmitForm(schoolDetails.GetAmpUrl(), cookies, form, requiredFields, AppConfig.Address, AppConfig.Latitude, AppConfig.Longitude);
                         Log.Information("表单提交成功!");
                     }
                 }
