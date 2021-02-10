@@ -1,5 +1,6 @@
 ﻿using cpdaily_auto_submit.CpdailyModels;
 using cpdaily_auto_submit.LoginWorkers;
+using cpdaily_auto_submit.Models;
 using McMaster.Extensions.CommandLineUtils;
 using Serilog;
 using System;
@@ -69,6 +70,11 @@ namespace cpdaily_auto_submit
                 var cookies = await loginWorker.IdsLogin(parameter);
                 Log.Information("登录成功, Cookie: {cookie}", cookies);
 
+                // remove before adding to avoid duplication.
+                AppConfig.Users.RemoveAll(x => x.Username == Username);
+                AppConfig.Users.Add(new User() { Username = Username, Password = Password });
+                AppConfig.SchoolName = SchoolName;
+                SaveAppConfig();
             }
             catch (Exception ex)
             {
