@@ -37,11 +37,11 @@ namespace cpdaily_auto_submit
 
             try
             {
-                Log.Information("获取 {info}...", "SecretKey");
+                Log.Information("正在获取 {info} ...", "SecretKey");
                 var secretKeyTask = cpdaily.GetSecretKeyAsync();
-                Log.Information("获取 {info}...", "学校列表");
+                Log.Information("正在获取 {info} ...", "学校列表");
                 var schools = await cpdaily.GetSchoolsAsync();
-                Log.Information("获取 {info}...", "学校ID");
+                Log.Information("正在获取 {info} ...", "学校ID");
                 var school = schools.Where(x => x.Name == SchoolName).FirstOrDefault();
                 var schoolDetailsTask = cpdaily.GetSchoolDetailsAsync(school, await secretKeyTask);
 
@@ -49,17 +49,18 @@ namespace cpdaily_auto_submit
                 ILoginWorker loginWorker = null;
                 if (loginWorkerType != null)
                 {
-                    Log.Information("使用专门登录适配器 <{LoginWorkerTypeName}>.", loginWorkerType.Name);
+                    Log.Information("使用专门登录适配器 <{LoginWorkerTypeName}>", loginWorkerType.Name);
                     loginWorker = (ILoginWorker)Activator.CreateInstance(loginWorkerType);
                 }
                 else
                 {
-                    Log.Information("使用通用登录适配器 <{LoginWorkerTypeName}>.", "DefaultLoginWorker");
+                    Log.Information("使用通用登录适配器 <{LoginWorkerTypeName}>", "DefaultLoginWorker");
                     loginWorker = new DefaultLoginWorker();
                 }
 
-                Log.Information("获取登录所需参数...");
-                var parameter = await loginWorker.GetLoginParameter(Username, Password, (await schoolDetailsTask).GetIdsLoginUrl());
+                Log.Information("正在获取登录所需参数...");
+                var schoolDetails = await schoolDetailsTask;
+                var parameter = await loginWorker.GetLoginParameter(Username, Password, schoolDetails.GetIdsLoginUrl());
                 if (parameter.NeedCaptcha)
                 {
                     Log.Information("需要验证码!");
@@ -78,7 +79,7 @@ namespace cpdaily_auto_submit
             }
             catch (Exception ex)
             {
-                Log.Error("登录过程种出现异常!");
+                Log.Error("登录过程中出现异常!");
                 Log.Error(ex.Message);
                 Log.Error(ex.StackTrace);
             }
