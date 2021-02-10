@@ -20,7 +20,8 @@ namespace cpdaily_auto_submit
     [VersionOptionFromMember("--version", MemberName = nameof(GetVersion))]
     [Subcommand(
         typeof(InitCommand),
-        typeof(AddUserCommand)
+        typeof(AddUserCommand),
+        typeof(SubmitCommand)
     )]
     class Program : CommandBase
     {
