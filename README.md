@@ -56,5 +56,30 @@ dotnet cpdaily-auto-submit.dll submit
 dotnet cpdaily-auto-submit.dll add-user -u "学号" -p "密码"
 ```
 
+### 0x04 修改定位信息(根据学校要求)
+配置定位信息需要手动修改 AppConfig.json 文件。该文件的内容可能如下：
+```json5
+{
+  "SchoolName": "学校名称",
+  "Address": "提交表单所在地址",
+  "Longitude": 0.0,                 // 经度，可在地图软件获得
+  "Latitude":  0.0,                 // 纬度，可在地图软件获得
+  "Users": [
+    {
+      "Username": "",  
+      "Password": ""
+    }
+  ],
+  "FormFields": [
+    {
+      "fieldType": 2,
+      "title": "与昨日相比信息有无变化",
+      "value": "无"
+    }
+  ]
+}
+```
+
+
 ## 声明
 一切开发旨在学习，请勿用于非法用途。
