@@ -101,7 +101,7 @@ namespace cpdaily_auto_submit
                     {
                         Log.Information("正在获取表单的字段...");
                         var formFields = await cpdaily.GetFormFieldsAsync(schoolDetails.GetAmpUrl(), cookies, form.WId, form.FormWId);
-                        var requiredFields = formFields.Where(x => x.IsRequired == 1).ToArray();
+                        var requiredFields = formFields.Where(x => x.IsRequired == true).ToArray();
 
                         if (requiredFields.Length != AppConfig.FormFields.Count)
                         {

@@ -35,13 +35,13 @@ namespace cpdaily_auto_submit.CpdailyModels
         public int? MaxLength { get; set; }
 
         [JsonProperty("isRequired")]
-        public int IsRequired { get; set; }
+        public bool IsRequired { get; set; }
 
         [JsonProperty("imageCount")]
         public int? ImageCount { get; set; }
 
         [JsonProperty("hasOtherItems")]
-        public int? HasOtherItems { get; set; }
+        public bool? HasOtherItems { get; set; }
 
         [JsonProperty("colName")]
         public string ColName { get; set; }

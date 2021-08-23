@@ -11,12 +11,12 @@ namespace cpdaily_auto_submit.CpdailyModels
         public string Content { get; set; }
 
         [JsonProperty("isOtherItems")]
-        public int? IsOtherItems { get; set; }
+        public bool? IsOtherItems { get; set; }
 
         [JsonProperty("contendExtend")]
         public string ContendExtend { get; set; }
 
         [JsonProperty("isSelected")]
-        public int? IsSelected { get; set; }
+        public bool? IsSelected { get; set; }
     }
 }

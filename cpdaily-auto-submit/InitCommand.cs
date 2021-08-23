@@ -103,7 +103,7 @@ namespace cpdaily_auto_submit
                 int index = Convert.ToInt32(Console.ReadLine()) - 1;
                 FormItem form = forms[index];
                 var formFields = await cpdaily.GetFormFieldsAsync(schoolDetails.GetAmpUrl(),cookies, form.WId, form.FormWId);
-                var requiredFields = formFields.Where(x => x.IsRequired == 1).ToArray();
+                var requiredFields = formFields.Where(x => x.IsRequired == true).ToArray();
                 Log.Information("获取到 {count} 条必填字段", requiredFields.Length);
                 List<FormFieldChange> result = new List<FormFieldChange>();
                 for (int i = 0; i < requiredFields.Length; i++)
