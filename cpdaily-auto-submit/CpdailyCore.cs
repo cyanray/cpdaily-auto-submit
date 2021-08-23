@@ -531,7 +531,7 @@ namespace cpdaily_auto_submit
                     if (item.Content == change.Value)
                     {
                         result.Value = item.ItemWid;
-                        item.IsSelected = true;
+                        item.IsSelected = 1;
                         result.FieldItems.Add(item);
                         break;
                     }
@@ -548,7 +548,7 @@ namespace cpdaily_auto_submit
                         if (item.Content == value)
                         {
                             result.Value += $"{item.Content} ";
-                            item.IsSelected = true;
+                            item.IsSelected = 1;
                             result.FieldItems.Add(item);
                         }
                     }

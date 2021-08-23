@@ -17,6 +17,6 @@ namespace cpdaily_auto_submit.CpdailyModels
         public string ContendExtend { get; set; }
 
         [JsonProperty("isSelected")]
-        public bool? IsSelected { get; set; }
+        public int? IsSelected { get; set; }
     }
 }
